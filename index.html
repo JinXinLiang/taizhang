@@ -228,7 +228,11 @@
             var random = Math.round(Math.random() * range);
             var element1 = format((average + random) / 100);
             sumCap -= element1 * 100;
-            sumPrice -= format(price * element1 / 100);
+            console.log('sumPrice : ' + sumPrice);
+            sumPrice -= format(price * element1);
+            console.log('price : ' + price);
+            console.log('element1 : ' + element1);
+            console.log('final : ' + sumPrice);
             sumPrice = format(sumPrice);
             var rowHtml1 = '';
             rowHtml1 += '<th>' + machineNo + '</th>';
