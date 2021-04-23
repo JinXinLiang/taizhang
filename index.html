@@ -175,7 +175,7 @@
         function generateArr(sumCap, sumPrice, machineNo) {
 
             var price = sumPrice / sumCap;
-            price = format(price);
+            price = parseFloat(format(price));
             sumCap = sumCap * 100;
             // 平均销售量
             var average = sumCap / days;
@@ -186,9 +186,9 @@
             if (days % 2 != 0) {
                 var random = Math.round(Math.random() * range);
                 var first = average - random;
-                first = format(first / 100);
+                first = parseFloat(format(first / 100));
                 sumCap -= first * 100;
-                sumPrice -= format(price * first);
+                sumPrice -= parseFloat(format(price * first));
                 average = sumCap / (days - 1);
                 range = parseInt(average / 2);
                 i++;
@@ -203,10 +203,10 @@
             }
             while (i < days - 1) {
                 var random = Math.round(Math.random() * range);
-                var element1 = format((average + random) / 100);
-                var element2 = format((average - random) / 100);
+                var element1 = parseFloat(format((average + random) / 100));
+                var element2 = parseFloat(format((average - random) / 100));
                 sumCap = sumCap - element1 * 100 - element2 * 100;
-                sumPrice = sumPrice - format(price * element1) - format(price * element2);
+                sumPrice = sumPrice - parseFloat(format(price * element1)) - parseFloat(format(price * element2));
                 var rowHtml1 = '';
                 rowHtml1 += '<th>' + machineNo + '</th>';
                 rowHtml1 += '<th>' + element1 + '</th>';
@@ -226,10 +226,10 @@
                 i += 2;
             }
             var random = Math.round(Math.random() * range);
-            var element1 = format((average + random) / 100);
+            var element1 = parseFloat(format((average + random) / 100));
             sumCap -= element1 * 100;
-            sumPrice -= format(price * element1);
-            sumPrice = format(sumPrice);
+            sumPrice -= parseFloat(format(price * element1));
+            sumPrice = parseFloat(format(sumPrice));
             var rowHtml1 = '';
             rowHtml1 += '<th>' + machineNo + '</th>';
             rowHtml1 += '<th>' + element1 + '</th>';
