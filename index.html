@@ -186,7 +186,7 @@
             if (days % 2 != 0) {
                 var random = Math.round(Math.random() * range);
                 var first = average - random;
-                first = (first / 100).toFixed(2)
+                first = format(first / 100);
                 sumCap -= first * 100;
                 average = sumCap / (days - 1);
                 range = parseInt(average / 2);
@@ -194,22 +194,22 @@
                 var rowHtml = '';
                 rowHtml += '<th>' + machineNo + '</th>';
                 rowHtml += '<th>' + first + '</th>';
-                rowHtml += '<th>' + price.toFixed(2) + '</th>';
-                rowHtml += '<th>' + (price * first).toFixed(2) + '</th>';
+                rowHtml += '<th>' + format(price) + '</th>';
+                rowHtml += '<th>' + format(price * first) + '</th>';
                 // html += '<th>' + Array.from(value).join(' | ') + '</th>';
                 rowHtml += '</tr>';
                 arr.push(rowHtml);
             }
             while (i < days - 1) {
                 var random = Math.round(Math.random() * range);
-                var element1 = ((average + random) / 100).toFixed(2);
-                var element2 = ((average - random) / 100).toFixed(2);
+                var element1 = format((average + random) / 100);
+                var element2 = format((average - random) / 100);
                 sumCap = sumCap - element1 * 100 - element2 * 100;
                 var rowHtml1 = '';
                 rowHtml1 += '<th>' + machineNo + '</th>';
                 rowHtml1 += '<th>' + element1 + '</th>';
-                rowHtml1 += '<th>' + price.toFixed(2) + '</th>';
-                rowHtml1 += '<th>' + (price * element1).toFixed(2) + '</th>';
+                rowHtml1 += '<th>' + format(price) + '</th>';
+                rowHtml1 += '<th>' + format(price * element1) + '</th>';
                 // html += '<th>' + Array.from(value).join(' | ') + '</th>';
                 rowHtml1 += '</tr>';
                 arr.push(rowHtml1);
@@ -217,28 +217,28 @@
 
                 rowHtml2 += '<th>' + machineNo + '</th>';
                 rowHtml2 += '<th>' + element2 + '</th>';
-                rowHtml2 += '<th>' + price.toFixed(2) + '</th>';
-                rowHtml2 += '<th>' + (price * element2).toFixed(2) + '</th>';
+                rowHtml2 += '<th>' + format(price) + '</th>';
+                rowHtml2 += '<th>' + format(price * element2) + '</th>';
                 // html += '<th>' + Array.from(value).join(' | ') + '</th>';
                 arr.push(rowHtml2);
                 i += 2;
             }
             var random = Math.round(Math.random() * range);
-            var element1 = ((average + random) / 100).toFixed(2);
+            var element1 = format((average + random) / 100);
             sumCap -= element1 * 100;
             var rowHtml1 = '';
             rowHtml1 += '<th>' + machineNo + '</th>';
             rowHtml1 += '<th>' + element1 + '</th>';
-            rowHtml1 += '<th>' + price.toFixed(2) + '</th>';
-            rowHtml1 += '<th>' + (price * element1).toFixed(2) + '</th>';
+            rowHtml1 += '<th>' + format(price) + '</th>';
+            rowHtml1 += '<th>' + format(price * element1) + '</th>';
             rowHtml1 += '</tr>';
             arr.push(rowHtml1);
             var rowHtml2 = '';
 
             rowHtml2 += '<th>' + machineNo + '</th>';
-            rowHtml2 += '<th>' + (sumCap / 100).toFixed(2) + '</th>';
-            rowHtml2 += '<th>' + price + '</th>';
-            rowHtml2 += '<th>' + (price * sumCap / 100).toFixed(2) + '</th>';
+            rowHtml2 += '<th>' + format(sumCap / 100) + '</th>';
+            rowHtml2 += '<th>' + format(price) + '</th>';
+            rowHtml2 += '<th>' + format(price * sumCap / 100) + '</th>';
             arr.push(rowHtml2);
 
             return randArray(arr);
@@ -287,6 +287,17 @@
             html += '</table>';
 
             return html;
+        }
+
+        function format(num) {
+            let str = ""; //字符串累加
+            str = (Math.round(num * 100) / 100)
+                .toFixed(2)
+                .toString()
+                .replace(/(\d)(?=(\d{3})+\.)/g, function($0, $1) {
+                    return $1 + ",";
+                });
+            return str; //字符串=>数组=>反转=>字符串
         }
 
         function start() {
