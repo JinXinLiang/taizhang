@@ -1,312 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script type="text/javascript" src="./jquery/jquery-3.5.1.min.js"></script>
-    <title>日销售成品油台账</title>
-    <style type="text/css">
-        * {
-            margin: 0;
-            padding: 0;
-        }
-        
-        .Subhead {
-            display: flex;
-            padding-bottom: 8px;
-            margin-bottom: 16px;
-            border-bottom: 1px solid #e1e4e8;
-            flex-flow: row wrap;
-        }
-        
-        .Subhead-heading {
-            font-size: 24px;
-            font-weight: 400;
-            flex: 1 1 auto;
-        }
-        
-        .Subhead-description {
-            font-size: 14px;
-            color: #586069;
-            flex: 1 100%;
-        }
-        
+    <title>日销售成品油台账生成工具</title>
+    <style>
         table {
+            width: 100%;
             border-collapse: collapse;
         }
-        
-        th,
-        td {
-            border: solid 1px #6D6D6D;
-            padding: 5px 10px;
+        table, th, td {
+            border: 1px solid black;
         }
-        /* .mt-sm {margin-top: 8px;} */
-        
-        body {
-            background: #f4f4f4;
-            padding: 0;
-            margin: 0;
+        th, td {
+            padding: 8px;
+            text-align: center;
         }
-        
-        .container {
-            /* width: 1024px; */
-            margin: 0 auto;
-            background: #fff;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        
-        #content_placeholder {
-            font-size: 12px;
-            color: #586069;
-            flex: 1 100%;
-        }
-        
-        .gas1 {
-            background-color: white;
-        }
-        
-        .gas2 {
-            background-color: rgb(158, 209, 80);
-        }
-        
-        .derl1 {
-            background-color: rgb(168, 167, 167);
-        }
-        
-        .derl2 {
-            background-color: orange;
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <div class="Subhead">
-            <h2 class="Subhead-heading">日销售成品油台账</h2>
+    <h1>日销售成品油台账生成工具</h1>
+    <form id="salesForm">
+        <label for="totalDays">销售总天数:</label>
+        <input type="number" id="totalDays" name="totalDays" required><br><br>
+        <label for="rowsPerPage">每页显示条数:</label>
+        <input type="number" id="rowsPerPage" name="rowsPerPage" required><br><br>
+        <div id="machinesContainer">
+            <div class="machine">
+                <label for="machineId">加油机编号:</label>
+                <input type="text" class="machineId" name="machineId" required><br><br>
+                <label for="days">销售天数:</label>
+                <input type="number" class="days" name="days" required><br><br>
+                <label for="startOil">起始油数量:</label>
+                <input type="number" class="startOil" name="startOil" required><br><br>
+                <label for="totalSales">销售总量:</label>
+                <input type="number" class="totalSales" name="totalSales" required><br><br>
+                <label for="totalAmount">销售总额:</label>
+                <input type="number" class="totalAmount" name="totalAmount" required><br><br>
+            </div>
         </div>
-        <h2></h2>
-        <div class="mt-sm">
-            <p>请输入销售天数：</p>
-            <input type="text" id="days" placeholder="如：31">
-            <br/>
-            <br/>
-            <p>请输入汽油-1销售总量：</p>
-            <input type="text" id="gasCap1" placeholder="如：1000">
-            <br/>
-            <br/>
-            <p>请输入汽油-1销售总额：</p>
-            <input type="text" id="gasSumPrice1" placeholder="如：10000">
-            <br/>
-            <br/>
-            <p>请输入汽油-2销售总量：</p>
-            <input type="text" id="gasCap2" placeholder="如：1000">
-            <br/>
-            <br/>
-            <p>请输入汽油-2销售总额：</p>
-            <input type="text" id="gasSumPrice2" placeholder="如：10000">
-            <br/>
-            <br/>
-            <p>请输入柴油-1销售总量：</p>
-            <input type="text" id="derlCap1" placeholder="如：1000">
-            <br/>
-            <br/>
-            <p>请输入柴油-1销售总额：</p>
-            <input type="text" id="derlSumPrice1" placeholder="如：10000">
-            <br/>
-            <br/>
-            <p>请输入柴油-2销售总量：</p>
-            <input type="text" id="derlCap2" placeholder="如：1000">
-            <br/>
-            <br/>
-            <p>请输入柴油-2销售总额：</p>
-            <input type="text" id="derlSumPrice2" placeholder="如：10000">
-            <br/>
-            <br/>
-            <input type="button" onclick="start()" value="开始生成" />
+        <button type="button" onclick="addMachine()">添加加油机</button><br><br>
+        <button type="button" onclick="generateLedger()">生成台账</button>
+    </form>
+    <br>
+    <div id="ledger"></div>
 
-        </div>
-        <br/>
-        <p>生成结果：</p>
-        <br/>
-        <div id="result">
-            <div id="content_placeholder">暂无生成内容</div>
-        </div>
-        <br/>
-        <br/>
-        <!-- <p>5.点击“导出”按钮，导出见车量结果：</p> -->
-
-    </div>
-
-    <script type="text/javascript">
-        var days;
-        var gasCap1;
-        var gasSumPrice1;
-        var gasCap2;
-        var gasSumPrice2;
-        var derlCap1;
-        var derlSumPrice1;
-        var derlCap2;
-        var derlSumPrice2;
-
-
-        function readWorkbook() {
-
-            days = document.getElementById('days').value;
-            gasCap1 = document.getElementById('gasCap1').value;
-            gasSumPrice1 = document.getElementById('gasSumPrice1').value;
-            gasCap2 = document.getElementById('gasCap2').value;
-            gasSumPrice2 = document.getElementById('gasSumPrice2').value;
-            derlCap1 = document.getElementById('derlCap1').value;
-            derlSumPrice1 = document.getElementById('derlSumPrice1').value;
-            derlCap2 = document.getElementById('derlCap2').value;
-            derlSumPrice2 = document.getElementById('derlSumPrice2').value;
-
-            var gasArr1 = generateArr(gasCap1, gasSumPrice1, "汽油机1");
-            var gasArr2 = generateArr(gasCap2, gasSumPrice2, "汽油机2");
-            var derlArr1 = generateArr(derlCap1, derlSumPrice1, "柴油机1");
-            var derlArr2 = generateArr(derlCap2, derlSumPrice2, "柴油机2");
-
-            document.getElementById('result').innerHTML = arr2table(gasArr1, gasArr2, derlArr1, derlArr2);
+    <script>
+        // 添加加油机表单
+        function addMachine() {
+            const container = document.getElementById('machinesContainer');
+            const machineDiv = document.createElement('div');
+            machineDiv.className = 'machine';
+            machineDiv.innerHTML = `
+                <label for="machineId">加油机编号:</label>
+                <input type="text" class="machineId" name="machineId" required><br><br>
+                <label for="days">销售天数:</label>
+                <input type="number" class="days" name="days" required><br><br>
+                <label for="startOil">起始油数量:</label>
+                <input type="number" class="startOil" name="startOil" required><br><br>
+                <label for="totalSales">销售总量:</label>
+                <input type="number" class="totalSales" name="totalSales" required><br><br>
+                <label for="totalAmount">销售总额:</label>
+                <input type="number" class="totalAmount" name="totalAmount" required><br><br>
+            `;
+            container.appendChild(machineDiv);
         }
 
-        function generateArr(sumCap, sumPrice, machineNo) {
+        // 生成台账
+        function generateLedger() {
+            const totalDays = parseInt(document.getElementById('totalDays').value);
+            const rowsPerPage = parseInt(document.getElementById('rowsPerPage').value);
+            const machines = document.getElementsByClassName('machine');
+            let allSalesData = [];
 
-            var price = sumPrice / sumCap;
-            price = format(price);
-            sumCap = sumCap * 100;
-            // 平均销售量
-            var average = sumCap / days;
+            // 遍历每个加油机，生成销售数据
+            for (let machine of machines) {
+                const machineId = machine.querySelector('.machineId').value;
+                const days = parseInt(machine.querySelector('.days').value);
+                const startOil = parseFloat(machine.querySelector('.startOil').value);
+                const totalSales = parseFloat(machine.querySelector('.totalSales').value);
+                const totalAmount = parseFloat(machine.querySelector('.totalAmount').value);
+                const unitPrice = totalAmount / totalSales;
 
-            var arr = new Array();
-            var range = parseInt(average / 2);
-            var i = 1;
-            if (days % 2 != 0) {
-                var random = Math.round(Math.random() * range);
-                var first = average - random;
-                first = format(first / 100);
-                sumCap -= first * 100;
-                sumPrice -= format(price * first);
-                average = sumCap / (days - 1);
-                range = parseInt(average / 2);
-                i++;
-                var rowHtml = '';
-                rowHtml += '<th>' + machineNo + '</th>';
-                rowHtml += '<th>' + first + '</th>';
-                rowHtml += '<th>' + format(price) + '</th>';
-                rowHtml += '<th>' + format(price * first) + '</th>';
-                // html += '<th>' + Array.from(value).join(' | ') + '</th>';
-                rowHtml += '</tr>';
-                arr.push(rowHtml);
-            }
-            while (i < days - 1) {
-                var random = Math.round(Math.random() * range);
-                var element1 = format((average + random) / 100);
-                var element2 = format((average - random) / 100);
-                sumCap = sumCap - element1 * 100 - element2 * 100;
-                sumPrice = sumPrice - format(price * element1) - format(price * element2);
-                var rowHtml1 = '';
-                rowHtml1 += '<th>' + machineNo + '</th>';
-                rowHtml1 += '<th>' + element1 + '</th>';
-                rowHtml1 += '<th>' + format(price) + '</th>';
-                rowHtml1 += '<th>' + format(price * element1) + '</th>';
-                // html += '<th>' + Array.from(value).join(' | ') + '</th>';
-                rowHtml1 += '</tr>';
-                arr.push(rowHtml1);
-                var rowHtml2 = '';
+                let salesPerDay = [];
+                let remainingSales = totalSales;
 
-                rowHtml2 += '<th>' + machineNo + '</th>';
-                rowHtml2 += '<th>' + element2 + '</th>';
-                rowHtml2 += '<th>' + format(price) + '</th>';
-                rowHtml2 += '<th>' + format(price * element2) + '</th>';
-                // html += '<th>' + Array.from(value).join(' | ') + '</th>';
-                arr.push(rowHtml2);
-                i += 2;
-            }
-            var random = Math.round(Math.random() * range);
-            var element1 = format((average + random) / 100);
-            sumCap -= element1 * 100;
-            console.log('sumPrice : ' + sumPrice);
-            sumPrice -= format(price * element1);
-            console.log('price : ' + price);
-            console.log('element1 : ' + element1);
-            console.log('final : ' + sumPrice);
-            sumPrice = format(sumPrice);
-            var rowHtml1 = '';
-            rowHtml1 += '<th>' + machineNo + '</th>';
-            rowHtml1 += '<th>' + element1 + '</th>';
-            rowHtml1 += '<th>' + format(price) + '</th>';
-            rowHtml1 += '<th>' + format(price * element1) + '</th>';
-            rowHtml1 += '</tr>';
-            arr.push(rowHtml1);
-            var rowHtml2 = '';
+                // 随机生成每日销售量
+                for (let i = 0; i < days; i++) {
+                    let dailySales = (i === days - 1) ? remainingSales : parseFloat((Math.random() * (remainingSales / (days - i))).toFixed(2));
+                    salesPerDay.push(dailySales);
+                    remainingSales -= dailySales;
+                }
 
-            rowHtml2 += '<th>' + machineNo + '</th>';
-            rowHtml2 += '<th>' + format(sumCap / 100) + '</th>';
-            rowHtml2 += '<th>' + format(price) + '</th>';
-            rowHtml2 += '<th>' + sumPrice + '</th>';
-            arr.push(rowHtml2);
+                // 随机选择销售天数
+                let selectedDays = [];
+                while (selectedDays.length < days) {
+                    let randomDay = Math.floor(Math.random() * totalDays) + 1;
+                    if (!selectedDays.includes(randomDay)) {
+                        selectedDays.push(randomDay);
+                    }
+                }
+                selectedDays.sort((a, b) => a - b);
 
-            return randArray(arr);
-        }
-
-        function randArray(data) {
-            //获取数组长度
-            var arrlen = data.length;
-            //创建数组 存放下标数
-            var try1 = new Array();
-            for (var i = 0; i < arrlen; i++) {
-                try1[i] = i;
-            }
-            //创建数组 生成随机下标数
-            var try2 = new Array();
-            for (var i = 0; i < arrlen; i++) {
-                try2[i] = try1.splice(Math.floor(Math.random() * try1.length), 1);
-            }
-            //创建数组，生成对应随机下标数的数组
-            var try3 = new Array();
-            for (var i = 0; i < arrlen; i++) {
-                try3[i] = data[try2[i]];
-            }
-            return try3;
-        }
-
-        function arr2table(gasArr1, gasArr2, derlArr1, derlArr2) {
-
-            var html = '<div class="mt-sm" style="padding-bottom:10px;"></div>';
-            html += '<table>';
-            html += '<th>' + '天数序号' + '</th>';
-            html += '<th>' + '油机编号' + '</th>';
-            html += '<th>' + '出油数量' + '</th>';
-            html += '<th>' + '单价' + '</th>';
-            html += '<th>' + '销售金额' + '</th>';
-            //html += '<th>' + '车牌号' + '</th>';
-
-            for (var i = 0; i < days; i++) {
-                var dayNoHtml = '<th>' + (i + 1) + '</th>';
-                html += '<tr class="gas1">' + dayNoHtml + gasArr1[i] + '</tr>';
-                html += '<tr class="gas2">' + dayNoHtml + gasArr2[i] + '</tr>';
-                html += '<tr class="derl1">' + dayNoHtml + derlArr1[i] + '</tr>';
-                html += '<tr class="derl2">' + dayNoHtml + derlArr2[i] + '</tr>';
+                // 生成每一天的销售数据
+                let currentStartOil = startOil;
+                for (let i = 0; i < days; i++) {
+                    let dailySales = salesPerDay[i];
+                    let dailyAmount = dailySales * unitPrice;
+                    let currentEndOil = currentStartOil + dailySales;
+                    allSalesData.push({
+                        day: selectedDays[i],
+                        machineId: machineId,
+                        startOil: currentStartOil.toFixed(2),
+                        endOil: currentEndOil.toFixed(2),
+                        sales: dailySales.toFixed(2),
+                        unitPrice: unitPrice.toFixed(2),
+                        amount: dailyAmount.toFixed(2)
+                    });
+                    currentStartOil = currentEndOil;
+                }
             }
 
-            html += '</table>';
+            // 确保每一天都有每个加油机的数据
+            for (let day = 1; day <= totalDays; day++) {
+                for (let machine of machines) {
+                    const machineId = machine.querySelector('.machineId').value;
+                    if (!allSalesData.find(d => d.day === day && d.machineId === machineId)) {
+                        allSalesData.push({
+                            day: day,
+                            machineId: machineId,
+                            startOil: '',
+                            endOil: '',
+                            sales: '',
+                            unitPrice: '',
+                            amount: ''
+                        });
+                    }
+                }
+            }
 
-            return html;
-        }
+            // 按天和加油机编号排序
+            allSalesData.sort((a, b) => a.day - b.day || a.machineId.localeCompare(b.machineId));
 
-        function format(num) {
-            let str = (Math.round(num * 100) / 100)
-                .toFixed(2);
-            return str; //字符串=>数组=>反转=>字符串
-        }
+            let ledgerHtml = '';
+            let pageCount = Math.ceil(allSalesData.length / rowsPerPage);
 
-        function start() {
-            readWorkbook();
+            // 生成分页表格
+            for (let page = 0; page < pageCount; page++) {
+                let pageSalesTotal = 0;
+                let pageAmountTotal = 0;
+
+                ledgerHtml += `<table>
+                                <tr>
+                                    <th>日期</th>
+                                    <th>加油机编号</th>
+                                    <th>起始油数量</th>
+                                    <th>结束油数量</th>
+                                    <th>销售量</th>
+                                    <th>单价</th>
+                                    <th>销售额</th>
+                                </tr>`;
+
+                for (let i = page * rowsPerPage; i < (page + 1) * rowsPerPage && i < allSalesData.length; i++) {
+                    let data = allSalesData[i];
+                    ledgerHtml += `<tr>
+                                    <td>第${data.day}天</td>
+                                    <td>${data.machineId}</td>
+                                    <td>${data.startOil}</td>
+                                    <td>${data.endOil}</td>
+                                    <td>${data.sales > 0 ? data.sales : ''}</td>
+                                    <td>${data.unitPrice}</td>
+                                    <td>${data.amount > 0 ? data.amount : ''}</td>
+                                   </tr>`;
+                    pageSalesTotal += parseFloat(data.sales) || 0;
+                    pageAmountTotal += parseFloat(data.amount) || 0;
+                }
+
+                ledgerHtml += `<tr>
+                                <td colspan="4">当前页合计</td>
+                                <td>${pageSalesTotal.toFixed(2)}</td>
+                                <td></td>
+                                <td>${pageAmountTotal.toFixed(2)}</td>
+                               </tr>`;
+                ledgerHtml += `</table><br>`;
+            }
+
+            document.getElementById('ledger').innerHTML = ledgerHtml;
         }
     </script>
 </body>
-
 </html>
