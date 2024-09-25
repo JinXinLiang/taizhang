@@ -81,11 +81,21 @@
             background-color: #f2f2f2;
         }
         .export-buttons {
-            margin-top: 20px;
-            text-align: center;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
         .export-buttons button {
             margin: 0 10px;
+        }
+        .bottom-space {
+            height: 100px;
         }
         @media (max-width: 600px) {
             body {
@@ -96,6 +106,19 @@
             }
             th, td {
                 padding: 8px 4px;
+            }
+            .export-buttons {
+                width: 100%;
+                left: 0;
+                transform: none;
+                border-radius: 0;
+                bottom: 0;
+            }
+            .export-buttons button {
+                width: calc(50% - 20px);
+            }
+            .bottom-space {
+                height: 80px;
             }
         }
     </style>
@@ -131,7 +154,8 @@
         <button type="button" onclick="generateLedger()">生成台账</button>
     </form>
     <div id="ledger"></div>
-    <div class="export-buttons" style="display: none;">
+    <div class="bottom-space"></div>
+    <div class="export-buttons">
         <button onclick="exportToPDF()">导出为 PDF</button>
         <button onclick="exportToExcel()">导出为 Excel</button>
     </div>
@@ -168,6 +192,17 @@
             const machines = document.getElementsByClassName('machine');
             let allSalesData = [];
 
+            // 基本验证
+            if (isNaN(totalDays) || totalDays <= 0) {
+                alert("请输入有效的销售总天数");
+                return;
+            }
+
+            if (isNaN(rowsPerPage) || rowsPerPage <= 0) {
+                alert("请输入有效的每页显示条数");
+                return;
+            }
+
             // 遍历每个加油机，生成销售数据
             for (let machine of machines) {
                 const machineId = machine.querySelector('.machineId').value;
@@ -175,6 +210,33 @@
                 const startOil = parseFloat(machine.querySelector('.startOil').value);
                 const totalSales = parseFloat(machine.querySelector('.totalSales').value);
                 const totalAmount = parseFloat(machine.querySelector('.totalAmount').value);
+
+                // 验证加油机数据
+                if (!machineId) {
+                    alert("请输入加油机编号");
+                    return;
+                }
+
+                if (isNaN(days) || days <= 0 || days > totalDays) {
+                    alert(`加油机 ${machineId} 的销售天数无效或超过总天数`);
+                    return;
+                }
+
+                if (isNaN(startOil) || startOil < 0) {
+                    alert(`加油机 ${machineId} 的起始油数量无效`);
+                    return;
+                }
+
+                if (isNaN(totalSales) || totalSales < 0) {
+                    alert(`加油机 ${machineId} 的销售总量无效`);
+                    return;
+                }
+
+                if (isNaN(totalAmount) || totalAmount < 0) {
+                    alert(`加油机 ${machineId} 的销售总额无效`);
+                    return;
+                }
+
                 const unitPrice = totalAmount / totalSales;
 
                 let salesPerDay = [];
@@ -281,7 +343,7 @@
             }
 
             document.getElementById('ledger').innerHTML = ledgerHtml;
-            document.querySelector('.export-buttons').style.display = 'block';
+            document.querySelector('.export-buttons').style.visibility = 'visible';
         }
 
         // 导出为 PDF
@@ -313,7 +375,6 @@
                     doc.addPage();
                     yOffset = 10;
                 }
-
                 // 将图像添加到 PDF
                 doc.addImage(imgData, 'JPEG', 10, yOffset, imgWidth, imgHeight);
                 yOffset += imgHeight + 10; // 为下一个表格留出空间
@@ -374,6 +435,9 @@
 
             XLSX.writeFile(workbook, "日销售成品油台账.xlsx");
         }
+
+        // 初始时隐藏导出按钮
+        document.querySelector('.export-buttons').style.visibility = 'hidden';
     </script>
 </body>
 </html>
