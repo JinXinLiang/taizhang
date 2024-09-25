@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>日销售成品油台账生成工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -76,6 +80,13 @@
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
+        .export-buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .export-buttons button {
+            margin: 0 10px;
+        }
         @media (max-width: 600px) {
             body {
                 padding: 10px;
@@ -120,6 +131,10 @@
         <button type="button" onclick="generateLedger()">生成台账</button>
     </form>
     <div id="ledger"></div>
+    <div class="export-buttons" style="display: none;">
+        <button onclick="exportToPDF()">导出为 PDF</button>
+        <button onclick="exportToExcel()">导出为 Excel</button>
+    </div>
 
     <script>
         // 添加加油机表单
@@ -266,6 +281,98 @@
             }
 
             document.getElementById('ledger').innerHTML = ledgerHtml;
+            document.querySelector('.export-buttons').style.display = 'block';
+        }
+
+        // 导出为 PDF
+        async function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // 获取所有表格
+            const tables = document.querySelectorAll('table');
+            let yOffset = 10;
+
+            for (let i = 0; i < tables.length; i++) {
+                // 将表格转换为 canvas
+                const canvas = await html2canvas(tables[i], {
+                    scale: 2, // 提高图像质量
+                    logging: false,
+                    useCORS: true
+                });
+
+                // 将 canvas 转换为图像数据
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+                // 计算图像在 PDF 中的尺寸
+                const imgWidth = 190; // 页面宽度减去边距
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+
+                // 如果图像超出页面，添加新页
+                if (yOffset + imgHeight > 280) {
+                    doc.addPage();
+                    yOffset = 10;
+                }
+
+                // 将图像添加到 PDF
+                doc.addImage(imgData, 'JPEG', 10, yOffset, imgWidth, imgHeight);
+                yOffset += imgHeight + 10; // 为下一个表格留出空间
+            }
+
+            // 保存 PDF
+            doc.save("日销售成品油台账.pdf");
+        }
+
+        // 导出为 Excel
+        function exportToExcel() {
+            const tables = document.querySelectorAll('table');
+            const workbook = XLSX.utils.book_new();
+            
+            tables.forEach((table, index) => {
+                const worksheet = XLSX.utils.table_to_sheet(table);
+                
+                // 设置列宽
+                const cols = [
+                    {wch: 10}, // 日期
+                    {wch: 15}, // 加油机编号
+                    {wch: 15}, // 起始油数量
+                    {wch: 15}, // 结束油数量
+                    {wch: 10}, // 销售量
+                    {wch: 10}, // 单价
+                    {wch: 15}  // 销售额
+                ];
+                worksheet['!cols'] = cols;
+
+                // 设置标题行样式
+                const range = XLSX.utils.decode_range(worksheet['!ref']);
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const address = XLSX.utils.encode_col(C) + "1";
+                    if (!worksheet[address]) continue;
+                    worksheet[address].s = {
+                        fill: {fgColor: {rgb: "3498DB"}},
+                        font: {
+                            color: {rgb: "FFFFFF"},
+                            bold: true,
+                            sz: 12
+                        },
+                        alignment: {horizontal: "center", vertical: "center"}
+                    };
+                }
+
+                // 设置所有单元格居中对齐
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+                        const address = XLSX.utils.encode_cell({r: R, c: C});
+                        if (!worksheet[address]) continue;
+                        worksheet[address].s = worksheet[address].s || {};
+                        worksheet[address].s.alignment = {horizontal: "center", vertical: "center"};
+                    }
+                }
+
+                XLSX.utils.book_append_sheet(workbook, worksheet, `Page ${index + 1}`);
+            });
+
+            XLSX.writeFile(workbook, "日销售成品油台账.xlsx");
         }
     </script>
 </body>
